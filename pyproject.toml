@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "squonk2-desc-mordred"
+version = "0.1.0"
+description = ""
+authors = [
+  "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+  "Kalev Takkis <ktakkis@informaticsmatters.com>",
+]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13.7"
+im-data-manager-job-utilities = ">=1.2.0"
+im-standardize-molecule = ">=0.1.0"
+mordredcommunity = ">=2.0.6"
+rdkit = ">=2025.3.6"
+
+
+[tool.poetry.group.dev.dependencies]
+im-jote = "^0.11.2"
+pre-commit = "^3"
+pylint = "^3"
+isort = "^5.13.2"
+black = "^24.8.0"
+mypy = "^1.11.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
