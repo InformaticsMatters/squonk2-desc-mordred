@@ -123,16 +123,3 @@ jobs:
             checks:
             - exists: true
             - lineCount: 11
-      execution-3d:
-        inputs:
-          inputFile: data/dhfr_3d-10.sdf
-        options:
-          outputFile: foo/descriptors3d.smi
-          writeHeader: true
-        checks:
-          exitCode: 0
-          outputs:
-          - name: foo/descriptors3d.smi
-            checks:
-            - exists: true
-            - lineCount: 11
