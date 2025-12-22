@@ -180,12 +180,12 @@ def main():
         help="Strategy for picking largest fragment (mw or hac or none",
     )
 
-    parser.add_argument(
-        "-3",
-        "--include-3d",
-        action="store_true",
-        help="Include 3D descriptors (requires 3D molecules in SDF file)",
-    )
+    # parser.add_argument(
+    #     "-3",
+    #     "--include-3d",
+    #     action="store_true",
+    #     help="Include 3D descriptors (requires 3D molecules in SDF file)",
+    # )
 
     parser.add_argument(
         "-k",
@@ -233,7 +233,7 @@ def main():
         args.input,
         args.output,
         mode=args.fragment_method,
-        include_3d=args.include_3d,
+        # include_3d=args.include_3d,
         omit_fields=args.omit_fields,
         delimiter=delimiter,
         id_column=args.id_column,

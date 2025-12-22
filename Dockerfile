@@ -1,33 +1,33 @@
 # ---- base python ----
-FROM python:3.13.7-alpine3.22 as python-base
+FROM python:3.13.9-slim-trixie as python-base
 
 ENV PYTHONUNBUFFERED=1
 ENV HOME=/code
 
 
-# ---- build stage with uv ----
-FROM python-base as uv-base
+# another stage for poetry installation. this ensures poetry won't end
+# up in final image where it's not needed
+FROM python-base AS poetry-base
 
-# Install uv in builder stage only
-RUN pip install --no-cache-dir uv
+ARG POETRY_VERSION=2.1.4
+RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 
 WORKDIR /
-COPY pyproject.toml uv.lock ./
+COPY poetry.lock pyproject.toml /
 
-# Create a virtualenv inside /.venv and install only main deps
-RUN uv venv /.venv && \
-    uv pip install --no-cache --python=/.venv/bin/python -r <(uv pip compile --only-main --no-emit-project -q uv.lock)
+RUN POETRY_VIRTUALENVS_IN_PROJECT=true poetry install --no-root --only main --no-directory
 
 
-# ---- final stage ----
+
+# final stage. only copy the venv with installed packages and point
+# paths to it
 FROM python-base as final
 
-# Copy over the ready-to-use venv
-COPY --from=uv-base /.venv /.venv
+COPY --from=poetry-base /.venv /.venv
 
-# Point runtime to the venv
 ENV PYTHONPATH="${PYTHONPATH}:/.venv/lib/python3.13/site-packages/"
 ENV PATH=/.venv/bin:$PATH
+
 
 WORKDIR ${HOME}
 COPY src/ ./
