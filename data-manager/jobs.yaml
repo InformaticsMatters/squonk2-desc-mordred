@@ -23,9 +23,8 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      python -m im_mordred.descriptor_generator -i '{{ inputFile }}' -o '{{ outputFile }}'
+      python /code/descriptor_generator.py -i '{{ inputFile }}' -o '{{ outputFile }}'
       {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
-      # {% if calc3d is defined and calc3d%}--include-3d{% endif %}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
