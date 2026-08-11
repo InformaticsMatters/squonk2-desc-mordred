@@ -19,12 +19,13 @@ import argparse
 import sys
 import time
 
+from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
+from dm_job_utilities.utils import expand_path, is_type, log, read_delimiter
 from mordred import Calculator, descriptors
 from rdkit import Chem
 
 import rdkit_utils
-import utils
 
 
 def run(
@@ -34,7 +35,7 @@ def run(
     include_3d=False,
     delimiter=None,
     id_column=None,
-    mol_column=0,
+    mol_column=None,
     omit_fields=False,
     read_header=False,
     write_header=False,
@@ -52,7 +53,7 @@ def run(
             DmLog.emit_event("Molecules do not seem to have 3D coordinates")
             exit(1)
 
-    utils.expand_path(outfile)
+    expand_path(outfile)
 
     calc = Calculator(descriptors, ignore_3D=not include_3d)
 
@@ -85,7 +86,8 @@ def run(
         mol_column=mol_column,
     )
 
-    id_col_type, id_col_value = utils.is_type(id_column, int)
+    id_col_type, id_col_value = is_type(id_column, int)
+    reporter = ProgressReporter(interval)
 
     # read the input records and write the output
     while True:
@@ -109,8 +111,7 @@ def run(
 
         count += 1
 
-        if interval and count % interval == 0:
-            DmLog.emit_event("Processed {} records".format(count))
+        reporter.report(count)
         if count % 50000 == 0:
             # Emit a 'total' cost, replacing all prior costs
             DmLog.emit_cost(count)
@@ -136,7 +137,7 @@ def run(
             values = calc(biggest)
 
         except KeyboardInterrupt:
-            utils.log("Interrupted")
+            log("Interrupted")
             sys.exit(0)
 
         except:
@@ -150,7 +151,7 @@ def run(
     reader.close()
 
     t1 = time.time()
-    utils.log("Processing took {} secs".format(round(t1 - t0)))
+    log("Processing took {} secs".format(round(t1 - t0)))
 
 
 def main():
@@ -165,12 +166,12 @@ def main():
     # ----- command line args definitions ---------------------------------------------
 
     parser = argparse.ArgumentParser(description="Mordred 2D descriptors")
-    parser.add_argument(
-        "-i", "--input", required=True, help="Input file (.smi or .sdf)"
+    # to pass tab as the delimiter specify it as $'\t' or use one of the
+    # symbolic names 'comma', 'tab', 'space' or 'pipe'
+    rdkit_utils.add_common_molecule_io_args(
+        parser, output_default="descriptors2d.smi"
     )
-    parser.add_argument(
-        "-o", "--output", default="descriptors2d.smi", help="Output file (.smi or .sdf"
-    )
+    add_reporting_args(parser)
 
     parser.add_argument(
         "-f",
@@ -187,47 +188,10 @@ def main():
     #     help="Include 3D descriptors (requires 3D molecules in SDF file)",
     # )
 
-    parser.add_argument(
-        "-k",
-        "--omit-fields",
-        action="store_true",
-        help="Don't include fields from the input in the output",
-    )
-
-    # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
-    parser.add_argument("-d", "--delimiter", help="Delimiter when using SMILES")
-    parser.add_argument(
-        "--id-column",
-        help="Column for name field (zero based integer for .smi, text for SDF)",
-    )
-    parser.add_argument(
-        "--mol-column",
-        type=int,
-        default=0,
-        help="Column index for molecule when using delineated text formats (zero based integer)",
-    )
-    parser.add_argument(
-        "--read-header",
-        action="store_true",
-        help="Read a header line with the field names when reading .smi or .txt",
-    )
-    parser.add_argument(
-        "--write-header",
-        action="store_true",
-        help="Write a header line when writing .smi or .txt",
-    )
-    parser.add_argument(
-        "--read-records",
-        default=100,
-        type=int,
-        help="Read this many records to determine the fields that are present",
-    )
-    parser.add_argument("--interval", type=int, help="Reporting interval")
-
     args = parser.parse_args()
     DmLog.emit_event("descriptor_calc: ", args)
 
-    delimiter = utils.read_delimiter(args.delimiter)
+    delimiter = read_delimiter(args.delimiter)
 
     run(
         args.input,
