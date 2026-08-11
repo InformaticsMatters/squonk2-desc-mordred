@@ -14,7 +14,7 @@ im-data-manager-job-utilities = ">=1.4.0"
 im-standardize-molecule = ">=0.1.0"
 mordredcommunity = ">=2.0.6"
 rdkit = ">=2025.3.6"
-im-rdkit-utilities = ">=1.1.1"
+im-rdkit-utilities = ">=1.1.2"
 
 
 [tool.poetry.group.dev.dependencies]
