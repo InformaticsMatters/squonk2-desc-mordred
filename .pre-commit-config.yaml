@@ -40,7 +40,7 @@ repos:
   - id: black
     args:
     - --target-version
-    - py311
+    - py313
 
 # MyPy
 - repo: https://github.com/pre-commit/mirrors-mypy

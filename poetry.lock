@@ -166,14 +166,14 @@ license = ["ukkonen"]
 
 [[package]]
 name = "im-data-manager-job-decoder"
-version = "2.5.0"
+version = "2.8.0"
 description = "Job decoding logic"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "im_data_manager_job_decoder-2.5.0-py3-none-any.whl", hash = "sha256:d177a37083b73c82d71c137cd36ab3bf54de0a4ab5ab55e5aec49acb238b86f6"},
-    {file = "im_data_manager_job_decoder-2.5.0.tar.gz", hash = "sha256:1a0523ccead3ad851dcf6a450ec1792be1830d20a938d3ddfdf04ffcdf915a47"},
+    {file = "im_data_manager_job_decoder-2.8.0-py3-none-any.whl", hash = "sha256:4157e49f01694849f6cfc14ba0e53f7edea254cd816bd8f33966f7ab75bc8607"},
+    {file = "im_data_manager_job_decoder-2.8.0.tar.gz", hash = "sha256:82bbc1aaed140b9e3e96e8cbd9f7a277456500c399a0d866d6864432b74afdbe"},
 ]
 
 [package.dependencies]
@@ -199,21 +199,20 @@ wrapt = "1.17.3"
 
 [[package]]
 name = "im-jote"
-version = "0.11.3"
+version = "0.14.0"
 description = "The IM Data Manager Job Tester (jote)"
 optional = false
 python-versions = ">=3.10.0"
 groups = ["dev"]
 files = [
-    {file = "im_jote-0.11.3-py3-none-any.whl", hash = "sha256:43217af59fd32eb3de9869cc56afbe2f2d79c7cf13879cc1b3ba88e3de52cf79"},
-    {file = "im_jote-0.11.3.tar.gz", hash = "sha256:e29d870ca935439d13f02277f785b013b1fe5476ee30c01bdf3fcb30090cc8e8"},
+    {file = "im_jote-0.14.0-py3-none-any.whl", hash = "sha256:e7a48450066ce824087753d849f1b71663b8d2af98625f773b848aafac37e0be"},
+    {file = "im_jote-0.14.0.tar.gz", hash = "sha256:efe64769d7fecc27a33295dd01242bb5b8523767db15e328a56c9aa1d9444bc3"},
 ]
 
 [package.dependencies]
-im-data-manager-job-decoder = "2.5.0"
-munch = "2.5.0"
+im-data-manager-job-decoder = ">=2.7.0"
+munch = "4.0.0"
 pyyaml = "5.3.1"
-setuptools = ">=70.0.0"
 wheel = "0.40.0"
 yamllint = "1.37.1"
 
@@ -597,21 +596,18 @@ full = ["pandas", "pyyaml", "tqdm"]
 
 [[package]]
 name = "munch"
-version = "2.5.0"
+version = "4.0.0"
 description = "A dot-accessible dictionary (a la JavaScript objects)"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 groups = ["dev"]
 files = [
-    {file = "munch-2.5.0-py2.py3-none-any.whl", hash = "sha256:6f44af89a2ce4ed04ff8de41f70b226b984db10a91dcc7b9ac2efc1c77022fdd"},
-    {file = "munch-2.5.0.tar.gz", hash = "sha256:2d735f6f24d4dba3417fa448cae40c6e896ec1fdab6cdb5e6510999758a4dbd2"},
+    {file = "munch-4.0.0-py2.py3-none-any.whl", hash = "sha256:71033c45db9fb677a0b7eb517a4ce70ae09258490e419b0e7f00d1e386ecb1b4"},
+    {file = "munch-4.0.0.tar.gz", hash = "sha256:542cb151461263216a4e37c3fd9afc425feeaf38aaa3025cd2a981fadb422235"},
 ]
 
-[package.dependencies]
-six = "*"
-
 [package.extras]
-testing = ["astroid (>=1.5.3,<1.6.0) ; python_version == \"2.7\"", "astroid (>=2.0) ; python_version >= \"3.4\"", "coverage", "pylint (>=1.7.2,<1.8.0) ; python_version == \"2.7\"", "pylint (>=2.3.1,<2.4.0) ; python_version >= \"3.4\"", "pytest"]
+testing = ["astroid (>=2.0)", "coverage", "pylint (>=2.3.1,<2.4.0)", "pytest"]
 yaml = ["PyYAML (>=5.1.0)"]
 
 [[package]]
@@ -1227,33 +1223,12 @@ files = [
 ]
 
 [[package]]
-name = "setuptools"
-version = "84.0.0"
-description = "Most extensible Python build backend with support for C/C++ extension modules"
-optional = false
-python-versions = ">=3.10"
-groups = ["dev"]
-files = [
-    {file = "setuptools-84.0.0-py3-none-any.whl", hash = "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670"},
-    {file = "setuptools-84.0.0.tar.gz", hash = "sha256:f4695c21257f0d9b537ec2692c941d02ee143b7cc1276941349a546573b2ef73"},
-]
-
-[package.extras]
-check = ["pytest-checkdocs (>=2.14)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\"", "ruff (>=0.13.0) ; sys_platform != \"cygwin\""]
-core = ["importlib_metadata (>=6) ; python_version < \"3.10\"", "jaraco.functools (>=4)", "jaraco.text (>=3.7)", "more_itertools", "more_itertools (>=8.8)", "packaging (>=24.2)", "tomli (>=2.0.1) ; python_version < \"3.11\"", "wheel (>=0.43.0)"]
-cover = ["pytest-cov"]
-doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
-enabler = ["pytest-enabler (>=3.4)"]
-test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21) ; python_version >= \"3.9\" and sys_platform != \"cygwin\"", "jaraco.envs (>=2.2)", "jaraco.path (>=3.7.2)", "jaraco.test (>=5.5)", "packaging (>=24.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.*)", "pytest-home (>=0.5)", "pytest-perf ; sys_platform != \"cygwin\"", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel (>=0.44.0)"]
-type = ["importlib_metadata (>=7.0.2) ; python_version < \"3.10\"", "jaraco.develop (>=7.21) ; sys_platform != \"cygwin\"", "mypy (==1.18.*)", "pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
-
-[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
@@ -1429,4 +1404,4 @@ dev = ["doc8", "flake8", "flake8-import-order", "rstcheck[sphinx]", "sphinx"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13.7"
-content-hash = "98ab71b4aacf9da373bdffb174b4765822fcff5575b7ca845617b08b49060047"
+content-hash = "3685e7baad99d72e599c12531003ac259fb300ce2cca319478ab48e164f40c79"

@@ -1,0 +1,30 @@
+---
+name: test
+
+# A callable workflow to execute repository tests.
+
+on:
+  workflow_call:
+
+env:
+  # Match the Dockerfile, so CI resolves dependencies the way the image does.
+  POETRY_VERSION: 2.1.4
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        # Match 'python' in pyproject.toml and the Dockerfile base image.
+        python-version: '3.13'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --no-cache-dir poetry=="${{ env.POETRY_VERSION }}"
+        POETRY_VIRTUALENVS_CREATE=false poetry install --only dev --no-root --no-directory
+    - name: Jote
+      run: jote --dry-run

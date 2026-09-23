@@ -10,15 +10,15 @@ jobs:
     name: 2D/3D Mordred descriptor generation
     description: >-
       Generate Mordred descriptors for molecules
-    version: '1.0.0'
+    version: '1.1.0'
     category: comp chem
     keywords:
     - rdkit
     - mordred
     - descriptors
     image:
-      name: kaliif/mordred-descriptors
-      tag: 'latest'
+      name: informaticsmatters/mordred-descriptors
+      tag: '1.1.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
