@@ -6,7 +6,7 @@ name: Calculate Mordred descriptors
 collection: im-virtual-screening
 
 jobs:
-  descriptor-generator:
+  mordred-descriptor-generator:
     name: 2D/3D Mordred descriptor generation
     description: >-
       Generate Mordred descriptors for molecules
