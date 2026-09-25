@@ -25,6 +25,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --no-cache-dir poetry=="${{ env.POETRY_VERSION }}"
-        POETRY_VIRTUALENVS_CREATE=false poetry install --only dev --no-root --no-directory
+        # Into a virtualenv, NOT 'POETRY_VIRTUALENVS_CREATE=false'. The dev
+        # group and poetry share dependencies - filelock, platformdirs and
+        # virtualenv itself - and installing the group alongside poetry
+        # replaces them underneath it, mid-install, from parallel threads.
+        # In squonk2-skl that left poetry unable to import its own code:
+        # 'FileNotFoundError: .../python_discovery/_py_info_collect.py'.
+        # Hence 'poetry run' on the step below.
+        poetry install --only dev --no-root --no-directory
     - name: Jote
-      run: jote --dry-run
+      run: poetry run jote --dry-run
