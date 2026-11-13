@@ -1,5 +1,7 @@
 # ---- base python ----
-FROM python:3.13.9-slim-trixie as python-base
+# LEGACY branch: original mordred 1.2.0 imports distutils, removed in Python
+# 3.12, so this image is built on 3.11 (not 3.13 like main).
+FROM python:3.11-slim-trixie as python-base
 
 ENV PYTHONUNBUFFERED=1
 ENV HOME=/code
@@ -25,7 +27,7 @@ FROM python-base as final
 
 COPY --from=poetry-base /.venv /.venv
 
-ENV PYTHONPATH="${PYTHONPATH}:/.venv/lib/python3.13/site-packages/"
+ENV PYTHONPATH="${PYTHONPATH}:/.venv/lib/python3.11/site-packages/"
 ENV PATH=/.venv/bin:$PATH
 
 

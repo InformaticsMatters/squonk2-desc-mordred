@@ -8,13 +8,26 @@ authors = [
 ]
 readme = "README.md"
 
+# This is the LEGACY-environment branch. It reproduces the mordred descriptors
+# of pre-trained jaqpotpy 1.0.x models, which used the ORIGINAL mordred 1.2.0
+# (not mordredcommunity) on rdkit 2023.9.6 / numpy 1.26. mordredcommunity
+# changes some values (ring perception), so `main` cannot reproduce the legacy
+# models. Do NOT bump these to match `main`.
 [tool.poetry.dependencies]
-python = "^3.13.7"
+# mordred 1.2.0 imports distutils, which was removed in Python 3.12, so this
+# branch is pinned to Python 3.11 (rdkit 2023.9.6 and numpy 1.26 both have 3.11
+# wheels).
+python = ">=3.11,<3.12"
 im-data-manager-job-utilities = ">=1.4.0"
 im-standardize-molecule = ">=0.1.0"
-mordredcommunity = ">=2.0.6"
-rdkit = ">=2026.3.6"
-im-rdkit-utilities = ">=1.2.0"
+# original mordred, NOT mordredcommunity
+mordred = "1.2.0"
+rdkit = "2023.9.6"
+numpy = "^1.26.4"
+# im-rdkit-utilities 1.2.1 relaxed its rdkit floor to >= 2023.9.6 (it uses only
+# long-stable rdkit APIs); earlier versions floored rdkit too high and would
+# have defeated this branch. See the desc-rdkit legacy branch.
+im-rdkit-utilities = ">=1.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -24,6 +37,10 @@ pylint = "^3"
 isort = "^5.13.2"
 black = "^24.8.0"
 mypy = "^1.11.1"
+pytest = "^8"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

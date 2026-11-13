@@ -16,16 +16,71 @@
 # Generates Mordred descriptors for molecules.
 
 import argparse
+import json
+import os
 import sys
 import time
 
+import mordred
+import numpy
+import rdkit
+import rdkit_utils
 from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 from dm_job_utilities.utils import expand_path, is_type, log, read_delimiter
-from mordred import Calculator, descriptors
 from rdkit import Chem
 
-import rdkit_utils
+import jaqpot_mordred as jm
+
+MANIFEST_SCHEMA_VERSION = 1
+
+
+def manifest_path(outfile):
+    """The sidecar manifest path for a descriptor file, matching how the
+    predictor looks for it: the final extension (and a trailing ``.gz``) is
+    replaced by ``.manifest.json`` (``foo.smi`` -> ``foo.manifest.json``,
+    ``foo.smi.gz`` -> ``foo.manifest.json``)."""
+    stem = outfile
+    if stem.endswith(".gz"):
+        stem = stem[: -len(".gz")]
+    stem, _ = os.path.splitext(stem)
+    return stem + ".manifest.json"
+
+
+def write_manifest(outfile, mode, id_column, columns):
+    """Write the sidecar manifest describing the mordred descriptor file, so
+    the predictor can check the file fits the model."""
+    is_sdf = outfile.endswith(".sdf") or outfile.endswith(".sdf.gz")
+
+    id_is_int, _ = is_type(id_column, int)
+    if id_column is None:
+        id_name = "_Name" if is_sdf else rdkit_utils.SMILES_COL_NAME
+    elif id_is_int or id_column == "_Name":
+        id_name = rdkit_utils.ID_COL_NAME
+    else:
+        id_name = id_column
+    smiles_column = None if is_sdf else rdkit_utils.SMILES_COL_NAME
+
+    manifest = {
+        "schema_version": MANIFEST_SCHEMA_VERSION,
+        "featurizer": {"name": jm.MORDRED, "params": jm.mordred_params()},
+        "columns": list(columns),
+        "id_column": id_name,
+        "smiles_column": smiles_column,
+        "fragment_method": mode,
+        "library_versions": {
+            "rdkit": rdkit.__version__,
+            "numpy": numpy.__version__,
+            "mordred": mordred.__version__,
+        },
+        # the job leaves uncomputable descriptors empty; the predictor fills
+        # them with the model's training fill
+        "missing_value": None,
+    }
+    path = manifest_path(outfile)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, indent=2)
+    DmLog.emit_event("Wrote descriptor manifest to {}".format(path))
 
 
 def run(
@@ -55,8 +110,6 @@ def run(
 
     expand_path(outfile)
 
-    calc = Calculator(descriptors, ignore_3D=not include_3d)
-
     count = 0
     errors = 0
 
@@ -73,7 +126,7 @@ def run(
     )
     extra_field_names = reader.get_extra_field_names()
 
-    calc_field_names = [str(name) for name in calc.descriptors]
+    calc_field_names = jm.descriptor_names()
     DmLog.emit_event("Calculating {} descriptors".format(len(calc_field_names)))
 
     # setup the writer
@@ -119,6 +172,9 @@ def run(
         if not mol:
             errors += 1
             DmLog.emit_event("Failed to read molecule for record", count)
+            # keep the output lined up with the input: a flagged (empty) row
+            # the predictor reports as a failed molecule
+            _write_flagged_row(writer, smi, mol, mol_id, props, calc_field_names)
             continue
 
         if omit_fields:
@@ -134,15 +190,16 @@ def run(
                 biggest = rdkit_utils.fragment(mol, mode)
                 cann_smi = Chem.MolToSmiles(biggest)
 
-            values = calc(biggest)
+            values = jm.mordred_values(biggest)
 
         except KeyboardInterrupt:
             log("Interrupted")
             sys.exit(0)
 
-        except:
+        except Exception:  # pylint: disable=broad-except
             errors += 1
             DmLog.emit_event("Failed to process record", count)
+            _write_flagged_row(writer, smi, mol, mol_id, props, calc_field_names)
             continue
 
         writer.write(cann_smi, biggest, mol_id, props, values)
@@ -150,8 +207,23 @@ def run(
     writer.close()
     reader.close()
 
+    write_manifest(outfile, mode, id_column, calc_field_names)
+
     t1 = time.time()
     log("Processing took {} secs".format(round(t1 - t0)))
+    DmLog.emit_event("Processed {} records ({} failed)".format(count, errors))
+
+
+def _write_flagged_row(writer, smi, mol, mol_id, props, columns):
+    """Write a row with empty descriptor values, so a molecule that could not
+    be read or featurised still appears in the output (lined up with the input)
+    and is visibly a failure. Best-effort: if the row can't be represented it
+    is dropped rather than crashing the run."""
+    empty = [None] * len(columns)
+    try:
+        writer.write(smi, mol, mol_id, props, empty)
+    except Exception as exc:  # pylint: disable=broad-except
+        DmLog.emit_event("Could not write a flagged row: {}".format(exc))
 
 
 def main():
@@ -168,9 +240,7 @@ def main():
     parser = argparse.ArgumentParser(description="Mordred 2D descriptors")
     # to pass tab as the delimiter specify it as $'\t' or use one of the
     # symbolic names 'comma', 'tab', 'space' or 'pipe'
-    rdkit_utils.add_common_molecule_io_args(
-        parser, output_default="descriptors2d.smi"
-    )
+    rdkit_utils.add_common_molecule_io_args(parser, output_default="descriptors2d.smi")
     add_reporting_args(parser)
 
     parser.add_argument(

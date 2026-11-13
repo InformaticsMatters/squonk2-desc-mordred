@@ -7,18 +7,23 @@ collection: im-virtual-screening
 
 jobs:
   mordred-descriptor-generator:
-    name: 2D/3D Mordred descriptor generation
+    name: 2D Mordred descriptor calculator (legacy, mordred 1.2.0)
     description: >-
-      Generate Mordred descriptors for molecules
-    version: '1.1.0'
+      Calculate 2D Mordred descriptors with the original mordred 1.2.0 on rdkit
+      2023.9.6, reproducing jaqpotpy 1.0.x so pre-trained legacy models can be
+      served (mordredcommunity, which main uses, changes some values). Writes a
+      sidecar manifest (.manifest.json) the predictor checks against the model.
+      For exact legacy reproduction use fragment method 'none'.
+    version: '1.0.0'
     category: comp chem
     keywords:
     - rdkit
     - mordred
     - descriptors
+    - jaqpot
     image:
       name: informaticsmatters/mordred-descriptors
-      tag: '1.1.0'
+      tag: 'legacy'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
