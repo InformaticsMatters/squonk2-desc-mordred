@@ -14,7 +14,7 @@ jobs:
       served (mordredcommunity, which main uses, changes some values). Writes a
       sidecar manifest (.manifest.json) the predictor checks against the model.
       For exact legacy reproduction use fragment method 'none'.
-    version: '1.0.0'
+    version: '1.0.1'
     category: comp chem
     keywords:
     - rdkit
