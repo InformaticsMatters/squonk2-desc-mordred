@@ -10,7 +10,7 @@ jobs:
     name: 2D Mordred descriptor calculator (legacy, mordred 1.2.0)
     description: >-
       Calculate 2D Mordred descriptors with the original mordred 1.2.0 on rdkit
-      2023.9.6, reproducing jaqpotpy 1.0.x so pre-trained legacy models can be
+      2023.9.6, reproducing the legacy library versions so pre-trained legacy models can be
       served (mordredcommunity, which main uses, changes some values). Writes a
       sidecar manifest (.manifest.json) the predictor checks against the model.
       For exact legacy reproduction use fragment method 'none'.
@@ -20,7 +20,6 @@ jobs:
     - rdkit
     - mordred
     - descriptors
-    - jaqpot
     image:
       name: informaticsmatters/mordred-descriptors
       tag: 'legacy'
@@ -67,6 +66,12 @@ jobs:
             - chemical/x-mdl-sdfile
             - squonk/x-smiles
             creates: '{{ outputFile }}'
+            type: file
+          manifestFile:
+            title: Descriptor manifest
+            mime-types:
+            - application/json
+            creates: '{{ (outputFile[:-3] if outputFile.endswith(".gz") else outputFile).rsplit(".", 1)[0] }}.manifest.json'
             type: file
       options:
         type: object
@@ -127,3 +132,6 @@ jobs:
             checks:
             - exists: true
             - lineCount: 11
+          - name: foo/descriptors2d.manifest.json
+            checks:
+            - exists: true
