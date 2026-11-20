@@ -21,7 +21,7 @@ jobs:
     - mordred
     - descriptors
     image:
-      name: informaticsmatters/mordred-descriptors
+      name: kaliif/mordred-descriptors
       tag: 'legacy'
       project-directory: /data
       working-directory: /data
