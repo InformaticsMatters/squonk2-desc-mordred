@@ -16,16 +16,82 @@
 # Generates Mordred descriptors for molecules.
 
 import argparse
+import json
+import os
 import sys
 import time
+from importlib.metadata import PackageNotFoundError, version
 
+import numpy
+import rdkit
+import rdkit_utils
 from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 from dm_job_utilities.utils import expand_path, is_type, log, read_delimiter
 from mordred import Calculator, descriptors
 from rdkit import Chem
 
-import rdkit_utils
+MANIFEST_SCHEMA_VERSION = 1
+
+
+def _mordred_version():
+    """Installed mordred library version. main uses mordredcommunity, which
+    (unlike the original mordred) exposes no mordred.__version__, so read it
+    from the package metadata."""
+    for pkg in ("mordredcommunity", "mordred"):
+        try:
+            return version(pkg)
+        except PackageNotFoundError:
+            continue
+    return "unknown"
+
+
+def manifest_path(outfile):
+    """The sidecar manifest path for a descriptor file, matching how the
+    predictor looks for it: the final extension (and a trailing ``.gz``) is
+    replaced by ``.manifest.json`` (``foo.smi`` -> ``foo.manifest.json``,
+    ``foo.smi.gz`` -> ``foo.manifest.json``)."""
+    stem = outfile
+    if stem.endswith(".gz"):
+        stem = stem[: -len(".gz")]
+    stem, _ = os.path.splitext(stem)
+    return stem + ".manifest.json"
+
+
+def write_manifest(outfile, mode, id_column, columns, ignore_3d):
+    """Write the sidecar manifest describing the mordred descriptor file, so
+    the predictor can check the file fits the model."""
+    is_sdf = outfile.endswith(".sdf") or outfile.endswith(".sdf.gz")
+
+    id_is_int, _ = is_type(id_column, int)
+    if id_column is None:
+        id_name = "_Name" if is_sdf else rdkit_utils.SMILES_COL_NAME
+    elif id_is_int or id_column == "_Name":
+        id_name = rdkit_utils.ID_COL_NAME
+    else:
+        id_name = id_column
+    smiles_column = None if is_sdf else rdkit_utils.SMILES_COL_NAME
+
+    manifest = {
+        "schema_version": MANIFEST_SCHEMA_VERSION,
+        "featurizer": {"name": "mordred", "params": {"ignore_3D": ignore_3d}},
+        "columns": list(columns),
+        "id_column": id_name,
+        "smiles_column": smiles_column,
+        "fragment_method": mode,
+        "library_versions": {
+            "rdkit": rdkit.__version__,
+            "numpy": numpy.__version__,
+            "mordred": _mordred_version(),
+        },
+        # the job leaves uncomputable descriptors empty; the predictor fills
+        # them with the model's training fill
+        "missing_value": None,
+    }
+    path = manifest_path(outfile)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, indent=2)
+    DmLog.emit_event("Wrote descriptor manifest to {}".format(path))
 
 
 def run(
@@ -150,6 +216,8 @@ def run(
     writer.close()
     reader.close()
 
+    write_manifest(outfile, mode, id_column, calc_field_names, not include_3d)
+
     t1 = time.time()
     log("Processing took {} secs".format(round(t1 - t0)))
 
@@ -168,9 +236,7 @@ def main():
     parser = argparse.ArgumentParser(description="Mordred 2D descriptors")
     # to pass tab as the delimiter specify it as $'\t' or use one of the
     # symbolic names 'comma', 'tab', 'space' or 'pipe'
-    rdkit_utils.add_common_molecule_io_args(
-        parser, output_default="descriptors2d.smi"
-    )
+    rdkit_utils.add_common_molecule_io_args(parser, output_default="descriptors2d.smi")
     add_reporting_args(parser)
 
     parser.add_argument(
